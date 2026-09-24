@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Double-Slit Mystery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#F3F5FA;
+  --panel:#FFFFFF;
+  --ink:#172036;
+  --muted:#556079;
+  --line:#D8DEEA;
+  --accent:#B85A12;
+  --accent-soft:#FCEBD9;
+  --wave:#0A7F9E;
+  --wave-soft:#DDF1F7;
+  --good:#1D7A4C;
+  --good-soft:#DDF3E7;
+  --miss:#9A4A12;
+  --stage:#0C1326;
+  --display:"Fredoka","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A0F1D;--panel:#121A2D;--ink:#E6EBF6;--muted:#9CA7C4;--line:#26314F;
+    --accent:#F2A541;--accent-soft:#2F2413;--wave:#6FD8F2;--wave-soft:#0F2A3A;
+    --good:#6FD9A0;--good-soft:#123024;--miss:#F2A541;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A0F1D;--panel:#121A2D;--ink:#E6EBF6;--muted:#9CA7C4;--line:#26314F;
+  --accent:#F2A541;--accent-soft:#2F2413;--wave:#6FD8F2;--wave-soft:#0F2A3A;
+  --good:#6FD9A0;--good-soft:#123024;--miss:#F2A541;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+.wrap{max-width:1160px;margin:0 auto;padding-inline:20px;padding-block:28px 56px;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;text-wrap:balance;margin:0}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+.hero{display:flex;flex-direction:column;gap:10px;max-width:62ch}
+.hero h1{text-wrap:pretty}
+.hero h1{font-size:clamp(2rem,5vw,3.1rem)}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lede{color:var(--muted);font-size:1.08rem}
+
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.step{appearance:none;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer;font:inherit;display:flex;gap:10px;align-items:center;transition:border-color .15s,background .15s}
+.step:hover{border-color:var(--muted)}
+.step:focus-visible,.btn:focus-visible,.choice:focus-visible,.switch:focus-visible,input:focus-visible,.link:focus-visible{outline:3px solid var(--wave);outline-offset:2px}
+.step .n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:600;background:var(--bg);border:1.5px solid var(--line)}
+.step .t{font-weight:800;font-size:.95rem;line-height:1.25}
+.step .s{display:block;font-weight:400;font-size:.8rem;color:var(--muted)}
+.step[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft)}
+.step[aria-current="step"] .n{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+
+.lab{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:20px;align-items:start}
+.stage-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stage{background:var(--stage);border-radius:16px;overflow:hidden;box-shadow:0 1px 0 var(--line)}
+#stage{display:block;width:100%;aspect-ratio:16/9;max-width:100%}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn,.switch{appearance:none;font:inherit;font-weight:800;font-size:.92rem;border-radius:999px;padding:8px 16px;cursor:pointer;border:1.5px solid var(--line);background:var(--panel);color:var(--ink)}
+.btn:hover,.switch:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.switch[aria-checked="true"]{background:#FF6B8B;border-color:#FF6B8B;color:#1B0A10}
+.rate{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.92rem}
+.rate input{width:120px;accent-color:var(--accent)}
+.rate output{font-family:var(--mono);font-size:.82rem;min-width:3.4em;color:var(--muted)}
+.check{display:flex;align-items:center;gap:6px;font-size:.92rem;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.count{font-family:var(--mono);font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+
+.notes{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.notes h2{font-size:1.65rem}
+.notes .setup{color:var(--ink)}
+.predict{display:flex;flex-direction:column;gap:10px;border-top:1.5px dashed var(--line);padding-top:14px}
+.predict .q strong{color:var(--accent)}
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.choice{appearance:none;font:inherit;font-size:.85rem;font-weight:800;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 6px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
+.choice:hover{border-color:var(--muted)}
+.choice svg{width:100%;max-width:70px;height:34px}
+.choice[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.choice.right{border-color:var(--good);background:var(--good-soft)}
+.answer{display:flex;flex-direction:column;gap:10px}
+.verdict{font-weight:800}
+.verdict.ok{color:var(--good)}
+.verdict.no{color:var(--miss)}
+.big{background:var(--wave-soft);border-radius:12px;padding:12px 14px;font-weight:600}
+.big span{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--wave);font-weight:500}
+.try{font-size:.93rem;color:var(--muted)}
+.link{appearance:none;background:none;border:0;padding:0;font:inherit;font-size:.9rem;color:var(--muted);text-decoration:underline;cursor:pointer;align-self:flex-start}
+.navrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1.5px solid var(--line);padding-top:14px}
+
+.meaning{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
+.meaning .text{display:flex;flex-direction:column;gap:12px;max-width:62ch}
+.meaning h2{font-size:1.8rem}
+blockquote{margin:0;border-left:4px solid var(--accent);padding:4px 0 4px 16px;font-style:italic;color:var(--ink)}
+blockquote cite{display:block;font-style:normal;font-size:.85rem;color:var(--muted);margin-top:6px}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.timeline li{display:grid;grid-template-columns:4.2em 1fr;gap:12px}
+.timeline .yr{font-family:var(--mono);font-size:.9rem;color:var(--accent);padding-top:2px}
+
+.glossary h2{font-size:1.5rem;margin-bottom:12px}
+.gl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0}
+.gl div{border-top:2px solid var(--line);padding-top:10px}
+.gl dt{font-family:var(--display);font-weight:600;font-size:1.1rem}
+.gl dd{margin:0;color:var(--muted);font-size:.95rem}
+
+.teacher{border:1.5px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;font-size:.95rem}
+.teacher h3{font-size:1.15rem}
+.teacher ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.teacher .fine{color:var(--muted);font-size:.88rem}
+
+@media (max-width:900px){
+  .lab,.meaning{grid-template-columns:1fr}
+}
+@media (max-width:620px){
+  body{font-size:16px}
+  .wrap{padding-inline:16px}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .count{margin-left:0;width:100%}
+  .notes{padding:18px}
+}
+@media (prefers-reduced-motion:reduce){
+  .step,.btn{transition:none}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Quantum physics · 4 short experiments</p>
+    <h1>The Double-Slit <em>Mystery</em></h1>
+    <p class="lede">Shoot things at a wall with two thin slits and see what lands on the screen behind it. Marbles and water waves act the way you'd expect. Electrons don't.</p>
+  </header>
+
+  <nav class="steps" aria-label="Experiment steps">
+    <button class="step" data-ch="0"><span class="n">1</span><span class="t">Marbles<span class="s">Particles</span></span></button>
+    <button class="step" data-ch="1"><span class="n">2</span><span class="t">Water waves<span class="s">Waves</span></span></button>
+    <button class="step" data-ch="2"><span class="n">3</span><span class="t">Electrons<span class="s">One at a time</span></span></button>
+    <button class="step" data-ch="3"><span class="n">4</span><span class="t">Take a peek<span class="s">Add a detector</span></span></button>
+  </nav>
+
+  <section class="lab">
+    <div class="stage-col">
+      <div class="stage"><canvas id="stage" role="img" aria-label="Animated double-slit experiment"></canvas></div>
+      <div class="controls">
+        <button id="play" class="btn primary">Pause</button>
+        <button id="fire" class="btn">Fire one</button>
+        <label class="rate" for="rate" id="rateWrap">Speed <input type="range" id="rate" min="1" max="40" value="10"><output id="rateOut" for="rate">10/s</output></label>
+        <button id="detector" class="switch" role="switch" aria-checked="false">Detector: off</button>
+        <button id="reset" class="btn">Clear screen</button>
+        <label class="check" for="theory" id="theoryWrap"><input type="checkbox" id="theory"> Show expected pattern</label>
+        <span id="count" class="count" aria-live="polite"></span>
+      </div>
+    </div>
+    <aside class="notes" id="notes" aria-live="polite"></aside>
+  </section>
+
+  <section class="meaning">
+    <div class="text">
+      <p class="eyebrow">So what does it mean?</p>
+      <h2>Tiny things follow different rules</h2>
+      <p>An electron is not a tiny marble and not a water wave. It travels like a wave, spreading out and going through both slits. But whenever we detect it, it shows up in just one spot, like a particle.</p>
+      <p>Scientists call this <strong>wave–particle duality</strong>. Light, electrons, and even whole molecules behave this way. It's one of the main ideas of quantum mechanics, the physics behind lasers, computer chips, and MRI scanners.</p>
+      <blockquote>“A phenomenon which is impossible, absolutely impossible, to explain in any classical way, and which has in it the heart of quantum mechanics.”<cite>Richard Feynman, physicist, about the double-slit experiment</cite></blockquote>
+    </div>
+    <div>
+      <p class="eyebrow" style="margin-bottom:12px">Real experiments</p>
+      <ol class="timeline">
+        <li><span class="yr">1801</span><span>Thomas Young shines light through two slits and sees stripes. This shows that light is a wave.</span></li>
+        <li><span class="yr">1905</span><span>Albert Einstein explains that light also comes in small packets, which we now call photons.</span></li>
+        <li><span class="yr">1961</span><span>Claus Jönsson does the double-slit experiment with electrons and finds stripes.</span></li>
+        <li><span class="yr">1989</span><span>Akira Tonomura's team sends electrons one at a time. Just like in step 3, the dots slowly build up into stripes.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="glossary">
+    <h2>Words to know</h2>
+    <dl class="gl">
+      <div><dt>Particle</dt><dd>A small object in one place, like a marble or a grain of sand.</dd></div>
+      <div><dt>Wave</dt><dd>A wiggle that spreads out as it travels, like ripples on a pond.</dd></div>
+      <div><dt>Interference</dt><dd>Two waves meeting: they add up where crest meets crest and cancel out where crest meets trough.</dd></div>
+      <div><dt>Electron</dt><dd>A tiny particle with a negative charge, found in every atom.</dd></div>
+      <div><dt>Measurement</dt><dd>Checking what something is doing. For tiny things, checking changes what they do.</dd></div>
+    </dl>
+  </section>
+
+  <section class="teacher">
+    <h3>For teachers: questions for discussion</h3>
+    <ol>
+      <li>In step 3, can you tell where the next electron will land? What <em>can</em> you predict?</li>
+      <li>Why don't we see stripes when we throw real marbles or baseballs?</li>
+      <li>In step 4, the detector only looks. Why would looking change the pattern?</li>
+    </ol>
+    <p class="fine">The patterns are simplified to make them clear. In real experiments, the spacing of the stripes depends on the wavelength and on how far apart the slits are. The detector in step 4 has to interact with each electron to find out which slit it went through, and that interaction is what destroys the stripes.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  // ---------- World geometry (logical units, 16:9) ----------
+  const W = 960, H = 540, Y0 = 270;
+  const SRC = { x: 78, y: Y0 };
+  const BAR_X = 400, BAR_W = 12;
+  const SLIT_A = 24;                       // slit width
+  const SLITS = [Y0 - 40, Y0 + 40];        // slit centres
+  const SCR_X = 800, SCR_W = 16;
+  const HIST_X = 828, HIST_W = 112;
+  const SCR_TOP = 30, SCR_BOT = 510, BIN = 4, NBINS = (SCR_BOT - SCR_TOP) / BIN;
+  const SPEED = 380;                       // particle speed, units/s
+  const PROJ = (SCR_X - SRC.x) / (BAR_X - SRC.x);
+  const BAND_C = 40 * PROJ;                // where each slit's straight-line band lands
+
+  const COL = {
+    grid: "rgba(120,140,190,0.10)", barrier: "#7D89AB", barrierEdge: "#A9B4D2",
+    screen: "#18223F", screenEdge: "#3A4A78", label: "#B9C4E0", labelDim: "#6F7BA0",
+    marble: "#F2A541", electron: "#6FE3FF", wave: [111, 216, 242], bg: [12, 19, 38], lamp: "#FF6B8B"
+  };
+
+  // ---------- Landing patterns (u = distance from centre) ----------
+  const gauss = (u, c, s) => Math.exp(-((u - c) ** 2) / (2 * s * s));
+  const PATTERNS = {
+    marble: u => (Math.abs(Math.abs(u) - BAND_C) < (SLIT_A / 2) * PROJ ? 1 : 0),
+    quantum: u => gauss(u, 0, 125) * Math.cos(Math.PI * u / 38) ** 2,
+    watched: u => gauss(u, BAND_C, 24) + gauss(u, -BAND_C, 24),
+    wave: null
+  };
+  // Water waves: two circular waves from the slits, time-averaged intensity at the screen
+  const WAVE_L = 18, WAVE_K = 2 * Math.PI / WAVE_L, WAVE_C = 150;
+  const waveI = new Float32Array(NBINS);
+  (function () {
+    let max = 0;
+    for (let b = 0; b < NBINS; b++) {
+      const y = SCR_TOP + (b + 0.5) * BIN;
+      let re = 0, im = 0;
+      for (const s of SLITS) {
+        const r = Math.hypot(SCR_X - (BAR_X + BAR_W), y - s);
+        const a = 1 / Math.sqrt(r);
+        re += a * Math.cos(WAVE_K * r); im += a * Math.sin(WAVE_K * r);
+      }
+      waveI[b] = re * re + im * im; max = Math.max(max, waveI[b]);
+    }
+    for (let b = 0; b < NBINS; b++) waveI[b] /= max;
+  })();
+
+  function sample(pdf) {
+    for (let i = 0; i < 5000; i++) {
+      const u = (Math.random() * 2 - 1) * 235;
+      if (Math.random() < pdf(u)) return u;
+    }
+    return 0;
+  }
+  function binShares(pdf) {
+    const v = new Float32Array(NBINS); let sum = 0;
+    for (let b = 0; b < NBINS; b++) {
+      let s = 0;
+      for (let k = 0; k < 4; k++) s += pdf(SCR_TOP + (b + (k + 0.5) / 4) * BIN - Y0);
+      v[b] = s; sum += s;
+    }
+    for (let b = 0; b < NBINS; b++) v[b] /= sum;
+    return v;
+  }
+  const SHARES = { marble: binShares(PATTERNS.marble), quantum: binShares(PATTERNS.quantum), watched: binShares(PATTERNS.watched) };
+
+  // ---------- Chapter content ----------
+  const PICS = {
+    two: '<svg viewBox="0 0 70 34" aria-hidden="true"><rect x="0" y="0" width="70" height="34" rx="4" fill="#18223F"/><rect x="17" y="4" width="9" height="26" rx="3" fill="#F2A541"/><rect x="44" y="4" width="9" height="26" rx="3" fill="#F2A541"/></svg>',
+    many: '<svg viewBox="0 0 70 34" aria-hidden="true"><rect x="0" y="0" width="70" height="34" rx="4" fill="#18223F"/>' +
+      [8, 18, 28, 38, 48, 58].map((x, i) => `<rect x="${x}" y="4" width="4" height="26" rx="2" fill="#6FE3FF" opacity="${[0.35, 0.7, 1, 1, 0.7, 0.35][i]}"/>`).join("") + '</svg>',
+    blob: '<svg viewBox="0 0 70 34" aria-hidden="true"><defs><radialGradient id="bg1"><stop offset="0" stop-color="#F2A541"/><stop offset="1" stop-color="#F2A541" stop-opacity="0"/></radialGradient></defs><rect x="0" y="0" width="70" height="34" rx="4" fill="#18223F"/><ellipse cx="35" cy="17" rx="22" ry="15" fill="url(#bg1)"/></svg>'
+  };
+  const CHOICES = [["two", "Two stripes"], ["many", "Many stripes"], ["blob", "One blob"]];
+
+  const CHAPTERS = [
+    {
+      name: "Marbles", mode: "marble", rate: 14,
+      setup: "Picture a machine that throws paint-covered marbles at a wall with two thin slits. Some marbles bounce off the wall. The rest fly through and leave a mark on the screen behind it.",
+      q: "What pattern will the marbles make on the screen?",
+      answer: "two",
+      explain: "You get two stripes, one behind each slit. Each marble goes through one slit or the other and keeps flying in a straight line.",
+      big: "Particles make two stripes.",
+      tip: "Turn on “Show expected pattern” to see the shape the marks should build up to.",
+      next: "Try water waves"
+    },
+    {
+      name: "Water waves", mode: "wave", rate: 0,
+      setup: "Now take away the marbles and fill the tank with water. A paddle on the left makes ripples that roll toward the same wall.",
+      q: "When the ripples reach the screen, what pattern do they make?",
+      answer: "many",
+      explain: "You get many stripes. Each slit starts its own set of ripples, and the two sets overlap. Where a crest meets a crest, they add up into a big wave: a bright stripe. Where a crest meets a trough, they cancel out: a dark stripe. This is called interference.",
+      big: "Waves make many stripes because they interfere.",
+      tip: "Look at the lines of calm water fanning out from the slits. Each one ends at a dark stripe.",
+      next: "Try electrons"
+    },
+    {
+      name: "Electrons, one at a time", mode: "quantum", rate: 3,
+      setup: "Electrons are tiny particles, much too small to see. An electron gun fires them at the wall one at a time. Each one makes a single dot where it hits the screen.",
+      q: "Electrons are particles, so which pattern do you think the dots will make?",
+      answer: "many",
+      explain: "You get many stripes, just like the water waves. Each electron lands as one dot, like a particle, and you can't tell where the next one will land. But after hundreds of dots, the stripes appear. Each electron seems to travel like a wave through both slits and interfere with itself.",
+      big: "Electrons land like particles but travel like waves.",
+      tip: "Press “Fire one” a few times and watch a single electron. Then turn the speed up. In real labs, electrons are sent so slowly that only one is in the machine at a time, and the stripes still appear.",
+      next: "Take a peek"
+    },
+    {
+      name: "Take a peek", mode: "quantum", rate: 12, detector: true,
+      setup: "Scientists wanted to know which slit each electron really goes through. So they put a detector next to the slits to watch. Turn it on with the pink Detector switch.",
+      q: "With the detector watching, which pattern will build up on the screen?",
+      answer: "two",
+      explain: "The stripes disappear. Once the detector records which slit each electron goes through, the electrons act like marbles and make two stripes. Turn the detector off and the many stripes come back. Just measuring the electron changes what it does.",
+      big: "Checking which slit an electron goes through erases the interference stripes.",
+      tip: "Switch the detector on and off. Each switch clears the screen so you can watch the new pattern grow.",
+      next: null
+    }
+  ];
+
+  // ---------- State ----------
+  let ch = 0, playing = true, autoFire = true, detectorOn = false, showTheory = false;
+  let rate = 10, spawnAcc = 0, waveT = 0, now = 0;
+  let particles = [], flashes = [], lampFlash = [-9, -9];
+  let bins = new Uint32Array(NBINS), thrown = 0, landed = 0;
+  const guesses = {};
+
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) playing = false;
+
+  // ---------- Canvas setup ----------
+  const canvas = document.getElementById("stage");
+  const ctx = canvas.getContext("2d");
+  let scale = 1;
+  const HIT_RES = 2;
+  const hitLayer = document.createElement("canvas");
+  hitLayer.width = W * HIT_RES; hitLayer.height = H * HIT_RES;
+  const hctx = hitLayer.getContext("2d");
+  hctx.scale(HIT_RES, HIT_RES);
+
+  const WG = 3, GW = W / WG, GH = H / WG;
+  const waveCanvas = document.createElement("canvas");
+  waveCanvas.width = GW; waveCanvas.height = GH;
+  const wctx = waveCanvas.getContext("2d");
+  const waveImg = wctx.createImageData(GW, GH);
+
+  function makeSprite(color, r, glow) {
+    const s = document.createElement("canvas"), size = (r + glow) * 2 * 2;
+    s.width = s.height = size;
+    const c = s.getContext("2d"), m = size / 2;
+    const g = c.createRadialGradient(m, m, 0, m, m, m);
+    g.addColorStop(0, color); g.addColorStop(r / (r + glow), color);
+    g.addColorStop(r / (r + glow) + 0.02, color + "66"); g.addColorStop(1, color + "00");
+    c.fillStyle = g; c.fillRect(0, 0, size, size);
+    return { img: s, half: r + glow };
+  }
+  const SPR = { marble: makeSprite(COL.marble, 5, 4), electron: makeSprite(COL.electron, 3, 7) };
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.round(rect.width * dpr));
+    canvas.height = Math.max(1, Math.round(rect.width * 9 / 16 * dpr));
+    scale = canvas.width / W;
+    draw();
+  }
+  new ResizeObserver(resize).observe(canvas);
+
+  // ---------- Simulation ----------
+  const mode = () => CHAPTERS[ch].mode;
+
+  function clearScreen() {
+    particles = []; flashes = []; bins = new Uint32Array(NBINS); thrown = 0; landed = 0; waveT = 0; spawnAcc = 0;
+    hctx.clearRect(0, 0, W, H);
+    updateCount();
+  }
+
+  function spawn() {
+    thrown++;
+    const m = mode();
+    if (m === "marble") {
+      const sy = SRC.y + (Math.random() - 0.5) * 6;
+      const ty = Y0 + (Math.random() * 2 - 1) * 72;
+      const dx = BAR_X - (SRC.x + 26), dy = ty - sy, len = Math.hypot(dx, dy);
+      particles.push({ kind: "marble", x: SRC.x + 26, y: sy, vx: SPEED * dx / len, vy: SPEED * dy / len, state: "fly" });
+    } else if (detectorOn) {
+      const i = Math.random() < 0.5 ? 0 : 1;
+      const ty = SLITS[i] + (Math.random() - 0.5) * (SLIT_A - 8);
+      const u = sample(v => gauss(v, i ? BAND_C : -BAND_C, 24));
+      particles.push({ kind: "electron", x: SRC.x + 26, y: SRC.y, state: "aim", slit: i, ty, landY: Y0 + u });
+    } else {
+      particles.push({ kind: "electron", x: SRC.x + 26, y: SRC.y + (Math.random() - 0.5) * 4, state: "toWall" });
+    }
+    updateCount();
+  }
+
+  function land(y, kind) {
+    landed++;
+    const b = Math.floor((y - SCR_TOP) / BIN);
+    if (b >= 0 && b < NBINS) bins[b]++;
+    hctx.fillStyle = kind === "marble" ? "rgba(242,165,65,0.9)" : "rgba(111,227,255,0.9)";
+    hctx.beginPath();
+    hctx.arc(SCR_X + 3 + Math.random() * (SCR_W - 6), y, kind === "marble" ? 1.9 : 1.5, 0, Math.PI * 2);
+    hctx.fill();
+    flashes.push({ y, t: now, kind });
+    updateCount();
+  }
+
+  function step(dt) {
+    now += dt;
+    if (!playing) return;
+    const m = mode();
+    if (m === "wave") { waveT += dt; return; }
+    if (autoFire) {
+      spawnAcc += rate * dt;
+      while (spawnAcc >= 1) { spawnAcc -= 1; spawn(); }
+    }
+
+    for (const p of particles) {
+      if (p.kind === "marble") {
+        const px = p.x;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.state === "fly" && px < BAR_X && p.x >= BAR_X) {
+          const through = SLITS.some(s => Math.abs(p.y - s) < SLIT_A / 2 - 3);
+          if (!through) { p.state = "bounce"; p.x = BAR_X - 1; p.vx *= -0.35; p.vy = (Math.random() - 0.5) * 120 + p.vy * 0.3; p.t0 = now; }
+        }
+        if (p.state === "fly" && p.x >= SCR_X) { land(p.y, "marble"); p.dead = true; }
+        if (p.state === "bounce" && now - p.t0 > 0.9) p.dead = true;
+      } else if (p.state === "toWall") {
+        p.x += SPEED * dt;
+        if (p.x >= BAR_X - 16) { p.state = "ripple"; p.t0 = now; }
+      } else if (p.state === "ripple") {
+        if ((now - p.t0) * SPEED >= SCR_X - BAR_X - BAR_W) { land(Y0 + sample(PATTERNS.quantum), "electron"); p.dead = true; }
+      } else if (p.state === "aim") {
+        const dx = BAR_X + BAR_W / 2 - p.x, dy = p.ty - p.y, d = Math.hypot(dx, dy), s = SPEED * dt;
+        if (s >= d) { p.x = BAR_X + BAR_W / 2; p.y = p.ty; p.state = "out"; lampFlash[p.slit] = now; }
+        else { p.x += dx / d * s; p.y += dy / d * s; }
+      } else if (p.state === "out") {
+        const dx = SCR_X - p.x, dy = p.landY - p.y, d = Math.hypot(dx, dy), s = SPEED * dt;
+        if (s >= d) { land(p.landY, "electron"); p.dead = true; }
+        else { p.x += dx / d * s; p.y += dy / d * s; }
+      }
+    }
+    particles = particles.filter(p => !p.dead);
+    flashes = flashes.filter(f => now - f.t < 0.5);
+  }
+
+  // ---------- Drawing ----------
+  function drawWaveField() {
+    const d = waveImg.data, front = WAVE_C * waveT, w = WAVE_K * WAVE_C;
+    const dSlit = Math.hypot(BAR_X - SRC.x, SLITS[0] - SRC.y);
+    const [br, bg, bb] = COL.bg, [cr, cg, cb] = COL.wave;
+    for (let gy = 0; gy < GH; gy++) {
+      const y = gy * WG + WG / 2;
+      for (let gx = 0; gx < GW; gx++) {
+        const x = gx * WG + WG / 2;
+        let v = 0, on = false;
+        if (x < BAR_X) {
+          const r = Math.hypot(x - SRC.x, y - SRC.y);
+          if (r < front) { v = Math.cos(WAVE_K * r - w * waveT) * Math.min(1, Math.sqrt(90 / (r + 1))); on = true; }
+        } else if (x > BAR_X + BAR_W && x < SCR_X) {
+          for (const s of SLITS) {
+            const r = Math.hypot(x - (BAR_X + BAR_W), y - s);
+            if (r + dSlit < front) { v += Math.cos(WAVE_K * (r + dSlit) - w * waveT) * Math.min(1, Math.sqrt(40 / (r + 1))); on = true; }
+          }
+          v *= 0.75;
+        }
+        const i = (gy * GW + gx) * 4;
+        const t = on ? Math.max(0, Math.min(1, (v + 1) / 2)) * 0.85 : 0;
+        d[i] = br + (cr - br) * t; d[i + 1] = bg + (cg - bg) * t; d[i + 2] = bb + (cb - bb) * t; d[i + 3] = 255;
+      }
+    }
+    wctx.putImageData(waveImg, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(waveCanvas, 0, 0, W, H);
+  }
+
+  function label(text, x, y, align, color) {
+    const fs = Math.max(15, 10.5 / scale);
+    ctx.font = `600 ${fs}px Fredoka, "Trebuchet MS", sans-serif`;
+    ctx.textAlign = align || "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = color || COL.label;
+    ctx.fillText(text, x, y);
+  }
+
+  function draw() {
+    const m = mode();
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.fillStyle = "#0C1326"; ctx.fillRect(0, 0, W, H);
+
+    // faint lab grid
+    ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 40; x < W; x += 40) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+    for (let y = 30; y < H; y += 40) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+    ctx.stroke();
+
+    if (m === "wave") drawWaveField();
+
+    // source
+    const srcCol = m === "marble" ? COL.marble : m === "wave" ? "#6FD8F2" : COL.electron;
+    ctx.fillStyle = "#26324F"; ctx.strokeStyle = "#4A5A88"; ctx.lineWidth = 2;
+    if (m === "wave") {
+      ctx.fillRect(SRC.x - 8, Y0 - 60, 16, 120); ctx.strokeRect(SRC.x - 8, Y0 - 60, 16, 120);
+      ctx.fillStyle = srcCol; ctx.fillRect(SRC.x + 6, Y0 - 60, 4, 120);
+    } else {
+      roundRect(SRC.x - 34, Y0 - 20, 60, 40, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#26324F"; ctx.fillRect(SRC.x + 24, Y0 - 7, 10, 14);
+      ctx.fillStyle = srcCol; ctx.beginPath(); ctx.arc(SRC.x + 30, Y0, 4, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // barrier with two slits
+    ctx.fillStyle = COL.barrier;
+    const gaps = [[SCR_TOP, SLITS[0] - SLIT_A / 2], [SLITS[0] + SLIT_A / 2, SLITS[1] - SLIT_A / 2], [SLITS[1] + SLIT_A / 2, SCR_BOT]];
+    for (const [a, b] of gaps) ctx.fillRect(BAR_X, a, BAR_W, b - a);
+    ctx.fillStyle = COL.barrierEdge;
+    for (const [a, b] of gaps) ctx.fillRect(BAR_X, a, 2, b - a);
+
+    // detector lamps
+    if (CHAPTERS[ch].detector) {
+      for (let i = 0; i < 2; i++) {
+        const lx = BAR_X + BAR_W + 16, ly = SLITS[i] + (i ? 30 : -30);
+        const fl = Math.max(0, 1 - (now - lampFlash[i]) / 0.35);
+        ctx.fillStyle = detectorOn ? COL.lamp : "#3A4668";
+        ctx.globalAlpha = detectorOn ? 0.55 + 0.45 * fl : 1;
+        ctx.beginPath(); ctx.arc(lx, ly, 7 + fl * 3, 0, Math.PI * 2); ctx.fill();
+        if (detectorOn && fl > 0) {
+          ctx.globalAlpha = 0.35 * fl; ctx.beginPath(); ctx.arc(lx, ly, 18, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        // eye pupil
+        ctx.fillStyle = "#0C1326"; ctx.beginPath(); ctx.arc(lx - 2, ly, 2.6, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // screen
+    ctx.fillStyle = COL.screen; ctx.fillRect(SCR_X, SCR_TOP, SCR_W, SCR_BOT - SCR_TOP);
+    const front = WAVE_C * waveT;
+    const waveArrived = m === "wave" ? Math.max(0, Math.min(1, (front - (SCR_X - SRC.x)) / 120)) : 0;
+    if (m === "wave" && waveArrived > 0) {
+      for (let b = 0; b < NBINS; b++) {
+        ctx.fillStyle = `rgba(111,216,242,${(waveI[b] * waveArrived).toFixed(3)})`;
+        ctx.fillRect(SCR_X, SCR_TOP + b * BIN, SCR_W, BIN + 0.5);
+      }
+    }
+    ctx.drawImage(hitLayer, 0, 0, W, H);
+    ctx.strokeStyle = COL.screenEdge; ctx.lineWidth = 1.5; ctx.strokeRect(SCR_X, SCR_TOP, SCR_W, SCR_BOT - SCR_TOP);
+
+    // histogram
+    ctx.strokeStyle = "rgba(160,175,215,0.25)"; ctx.beginPath(); ctx.moveTo(HIST_X, SCR_TOP); ctx.lineTo(HIST_X, SCR_BOT); ctx.stroke();
+    if (m === "wave") {
+      if (waveArrived > 0) {
+        ctx.fillStyle = "rgba(111,216,242,0.55)";
+        ctx.beginPath(); ctx.moveTo(HIST_X, SCR_TOP);
+        for (let b = 0; b < NBINS; b++) ctx.lineTo(HIST_X + waveI[b] * waveArrived * HIST_W, SCR_TOP + (b + 0.5) * BIN);
+        ctx.lineTo(HIST_X, SCR_BOT); ctx.closePath(); ctx.fill();
+      }
+    } else {
+      const kindCol = m === "marble" ? "rgba(242,165,65,0.8)" : "rgba(111,227,255,0.8)";
+      const shares = m === "marble" ? SHARES.marble : detectorOn ? SHARES.watched : SHARES.quantum;
+      let maxC = 6;
+      for (let b = 0; b < NBINS; b++) maxC = Math.max(maxC, bins[b]);
+      if (showTheory) for (let b = 0; b < NBINS; b++) maxC = Math.max(maxC, shares[b] * Math.max(landed, 60));
+      ctx.fillStyle = kindCol;
+      for (let b = 0; b < NBINS; b++) if (bins[b]) ctx.fillRect(HIST_X + 1, SCR_TOP + b * BIN + 0.5, bins[b] / maxC * HIST_W, BIN - 1);
+      if (showTheory) {
+        ctx.strokeStyle = "#FFFFFF"; ctx.lineWidth = 1.6; ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        for (let b = 0; b < NBINS; b++) {
+          const x = HIST_X + shares[b] * Math.max(landed, 60) / maxC * HIST_W, y = SCR_TOP + (b + 0.5) * BIN;
+          b ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+    }
+
+    // ripples (electron travelling as a wave)
+    for (const p of particles) {
+      if (p.state !== "ripple") continue;
+      const r = (now - p.t0) * SPEED;
+      const fade = 1 - r / (SCR_X - BAR_X);
+      ctx.lineWidth = 2;
+      for (let k = 0; k < 3; k++) {
+        const rr = r - k * 16;
+        if (rr <= 2) continue;
+        ctx.strokeStyle = `rgba(111,227,255,${(0.55 * fade * (1 - k * 0.3)).toFixed(3)})`;
+        for (const s of SLITS) { ctx.beginPath(); ctx.arc(BAR_X + BAR_W, s, rr, -1.25, 1.25); ctx.stroke(); }
+      }
+      // a short fading glow as the electron reaches the wall
+      const g = Math.max(0, 1 - (now - p.t0) / 0.25);
+      if (g > 0) { ctx.globalAlpha = g; ctx.drawImage(SPR.electron.img, BAR_X - 16 - SPR.electron.half, p.y - SPR.electron.half, SPR.electron.half * 2, SPR.electron.half * 2); ctx.globalAlpha = 1; }
+    }
+    // particles
+    for (const p of particles) {
+      if (p.state === "ripple") continue;
+      const s = SPR[p.kind];
+      ctx.globalAlpha = p.state === "bounce" ? Math.max(0, 1 - (now - p.t0) / 0.9) : 1;
+      ctx.drawImage(s.img, p.x - s.half, p.y - s.half, s.half * 2, s.half * 2);
+    }
+    ctx.globalAlpha = 1;
+    // landing flashes
+    for (const f of flashes) {
+      const a = 1 - (now - f.t) / 0.5;
+      ctx.strokeStyle = f.kind === "marble" ? `rgba(242,165,65,${a})` : `rgba(111,227,255,${a})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(SCR_X + SCR_W / 2, f.y, 4 + (1 - a) * 12, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    // labels
+    const srcName = m === "marble" ? "Marble launcher" : m === "wave" ? "Wave paddle" : "Electron gun";
+    label(srcName, 10, 14, "left");
+    label("Wall with 2 slits", BAR_X + BAR_W / 2, 14, "center");
+    label("Screen", SCR_X + SCR_W / 2, 14, "center");
+    if (scale > 0.6) label("Hits", HIST_X + HIST_W / 2 + 6, 14, "center", COL.labelDim);
+    if (CHAPTERS[ch].detector) label(detectorOn ? "Detector ON: watching the slits" : "Detector off", BAR_X + 26, SCR_BOT + 16, "left", detectorOn ? COL.lamp : COL.labelDim);
+    if (!playing || (!autoFire && m !== "wave" && !particles.length)) label(playing ? "Press Play or Fire one" : "Paused", W / 2 - 180, SCR_BOT + 16, "center", COL.labelDim);
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  let last = performance.now();
+  function frame(t) {
+    const dt = Math.min(0.05, (t - last) / 1000); last = t;
+    step(dt); draw();
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- UI ----------
+  const $ = id => document.getElementById(id);
+  const playBtn = $("play"), fireBtn = $("fire"), rateIn = $("rate"), rateOut = $("rateOut"), rateWrap = $("rateWrap");
+  const detBtn = $("detector"), resetBtn = $("reset"), theoryIn = $("theory"), theoryWrap = $("theoryWrap"), countEl = $("count"), notes = $("notes");
+  const stepBtns = [...document.querySelectorAll(".step")];
+
+  function updateCount() {
+    const m = mode();
+    if (m === "wave") countEl.textContent = "";
+    else if (m === "marble") countEl.textContent = `Thrown: ${thrown} · Hit the screen: ${landed}`;
+    else countEl.textContent = `Electrons sent: ${thrown} · Landed: ${landed}`;
+  }
+  function setPlaying(v, auto) {
+    playing = v; if (auto !== undefined) autoFire = auto;
+    playBtn.textContent = playing && (autoFire || mode() === "wave") ? "Pause" : "Play";
+  }
+  function setRate(v) { rate = v; rateIn.value = v; rateOut.value = rateOut.textContent = `${v}/s`; }
+  function setDetector(v) {
+    detectorOn = v;
+    detBtn.setAttribute("aria-checked", String(v));
+    detBtn.textContent = v ? "Detector: on" : "Detector: off";
+    clearScreen();
+  }
+
+  function renderNotes() {
+    const c = CHAPTERS[ch], g = guesses[ch];
+    const revealed = g !== undefined;
+    notes.innerHTML = `
+      <p class="eyebrow">Step ${ch + 1} of 4</p>
+      <h2>${c.name}</h2>
+      <p class="setup">${c.setup}</p>
+      <div class="predict">
+        <p class="q"><strong>Predict first.</strong> ${c.q}</p>
+        <div class="choices">${CHOICES.map(([k, t]) => `<button class="choice${revealed && k === c.answer ? " right" : ""}" data-k="${k}" aria-pressed="${g === k}">${PICS[k]}${t}</button>`).join("")}</div>
+      </div>
+      ${revealed ? `
+      <div class="answer">
+        ${g === "skip" ? "" : `<p class="verdict ${g === c.answer ? "ok" : "no"}">${g === c.answer ? "You got it." : "Good guess, but that's not what happens."}</p>`}
+        <p>${c.explain}</p>
+        <p class="big"><span>Big idea</span>${c.big}</p>
+        <p class="try">${c.tip}</p>
+      </div>` : `<button class="link" id="skip">Skip and show the answer</button>`}
+      <div class="navrow">
+        ${ch > 0 ? `<button class="btn" id="prev">Back</button>` : "<span></span>"}
+        ${c.next ? `<button class="btn primary" id="next">Next: ${c.next}</button>` : `<button class="btn" id="restart">Start over</button>`}
+      </div>`;
+    notes.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => { guesses[ch] = b.dataset.k; renderNotes(); }));
+    const sk = notes.querySelector("#skip"); if (sk) sk.addEventListener("click", () => { guesses[ch] = "skip"; renderNotes(); });
+    const pv = notes.querySelector("#prev"); if (pv) pv.addEventListener("click", () => goto(ch - 1));
+    const nx = notes.querySelector("#next"); if (nx) nx.addEventListener("click", () => goto(ch + 1));
+    const rs = notes.querySelector("#restart"); if (rs) rs.addEventListener("click", () => goto(0));
+  }
+
+  function goto(i) {
+    ch = i;
+    const c = CHAPTERS[ch];
+    stepBtns.forEach((b, j) => { if (j === ch) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
+    const isWave = c.mode === "wave";
+    fireBtn.hidden = isWave; rateWrap.hidden = isWave; theoryWrap.hidden = isWave;
+    detBtn.hidden = !c.detector;
+    fireBtn.textContent = c.mode === "marble" ? "Throw one" : "Fire one";
+    if (c.rate) setRate(c.rate);
+    detectorOn = false; detBtn.setAttribute("aria-checked", "false"); detBtn.textContent = "Detector: off";
+    clearScreen();
+    if (playing) setPlaying(true, true); else setPlaying(false);
+    renderNotes();
+    try { localStorage.setItem("dslit-ch", String(ch)); } catch (e) {}
+  }
+
+  stepBtns.forEach(b => b.addEventListener("click", () => goto(+b.dataset.ch)));
+  playBtn.addEventListener("click", () => {
+    const running = playing && (autoFire || mode() === "wave");
+    running ? setPlaying(false) : setPlaying(true, true);
+  });
+  fireBtn.addEventListener("click", () => { setPlaying(true, false); spawn(); });
+  rateIn.addEventListener("input", () => setRate(+rateIn.value));
+  detBtn.addEventListener("click", () => setDetector(!detectorOn));
+  resetBtn.addEventListener("click", clearScreen);
+  theoryIn.addEventListener("change", () => { showTheory = theoryIn.checked; });
+
+  let start = 0;
+  try { const s = parseInt(localStorage.getItem("dslit-ch"), 10); if (s >= 0 && s < 4) start = s; } catch (e) {}
+  setPlaying(playing);
+  goto(start);
+  requestAnimationFrame(t => { last = t; frame(t); });
+})();
+</script>
+</body>
+</html>
